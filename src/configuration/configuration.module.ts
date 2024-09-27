@@ -1,7 +1,8 @@
-import { Module } from "@nestjs/common";
+import { Module, ValidationPipe } from "@nestjs/common";
 import { CacheModule } from "@nestjs/cache-manager";
 import { ConfigModule } from "@nestjs/config";
 import * as process from "node:process";
+import { APP_PIPE } from "@nestjs/core";
 
 @Module({
   imports: [
@@ -28,6 +29,19 @@ import * as process from "node:process";
       },
     }),
     ConfigModule.forRoot({ isGlobal: true, cache: true, envFilePath: ".env" }),
+  ],
+  providers: [
+    {
+      provide: APP_PIPE,
+      useValue: new ValidationPipe({
+        whitelist: true,
+        forbidNonWhitelisted: true,
+        transform: true,
+        transformOptions: {
+          enableImplicitConversion: true,
+        },
+      }),
+    },
   ],
 })
 export class ConfigurationModule {}
