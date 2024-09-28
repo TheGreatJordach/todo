@@ -41,7 +41,7 @@ export class UsersService {
     }
   }
 
-  async checkIfExsit(email: string): Promise<boolean> {
+  async checkIfExit(email: string): Promise<boolean> {
     try {
       const result = await this.usersRepository.count({ where: { email } });
       return result > 0;
