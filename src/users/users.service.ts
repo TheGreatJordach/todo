@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "./entity/user-entity";
 import { Repository } from "typeorm";
@@ -10,7 +10,29 @@ export class UsersService {
     @InjectRepository(User) private readonly usersRepository: Repository<User>
   ) {}
 
-  create(createUserDto: CreateUserDto) {
-    return `this service create a new user ${JSON.stringify(createUserDto)}`;
+  async create(createUserDto: CreateUserDto) {
+    try {
+      const user: User = this.usersRepository.create(createUserDto);
+      return await this.usersRepository.save(user);
+    } catch (error) {
+      if (error.code === "23505") {
+        // PostgresSQL unique constraint violation code
+        throw new HttpException(
+          "Email you are using is already used",
+          HttpStatus.CONFLICT
+        );
+      }
+    }
+  }
+  async findByEmail(email: string): Promise<User> {
+    try {
+      const user: User = await this.usersRepository.findOne({
+        where: { email: email },
+      });
+      if (!user) throw new HttpException("User not found", 404);
+      return user;
+    } catch (error) {
+      throw new HttpException("User not found", 404);
+    }
   }
 }
