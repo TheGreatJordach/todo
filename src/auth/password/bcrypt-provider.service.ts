@@ -1,17 +1,18 @@
 import { Injectable, InternalServerErrorException } from "@nestjs/common";
 import { HashAlgoInterface } from "./hash-algo.interface";
 import * as bcrypt from "bcrypt";
-import { ConfigService } from "@nestjs/config";
 
 @Injectable()
 export class BcryptProvider implements HashAlgoInterface {
-  constructor(private readonly configService: ConfigService) {}
+  constructor() {}
 
-  private readonly saltRound = this.configService.get<number>("SALT_ROUNDS");
+  private readonly saltRound: number = parseInt(process.env.SALT_ROUNDS);
 
   async hash(data: string | Buffer): Promise<string> {
     try {
-      const salt = await bcrypt.genSalt(this.saltRound);
+      console.log(this.saltRound);
+      const salt = bcrypt.genSaltSync(this.saltRound);
+
       return await bcrypt.hash(data, salt);
     } catch (error) {
       throw new InternalServerErrorException(

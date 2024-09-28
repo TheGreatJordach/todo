@@ -1,4 +1,9 @@
-import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  InternalServerErrorException,
+} from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "./entity/user-entity";
 import { Repository } from "typeorm";
@@ -33,6 +38,18 @@ export class UsersService {
       return user;
     } catch (error) {
       throw new HttpException("User not found", 404);
+    }
+  }
+
+  async checkIfExsit(email: string): Promise<boolean> {
+    try {
+      const result = await this.usersRepository.count({ where: { email } });
+      return result > 0;
+    } catch (error) {
+      throw new InternalServerErrorException(
+        "something happen when trying to contact de database",
+        error.code
+      );
     }
   }
 }
